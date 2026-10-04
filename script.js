@@ -4,6 +4,7 @@ function ViewsConverter(views){
     return views;
 }
 function CreateCard(videoData){
+    console.log(`Creating Card: ${videoData.title}`);
     const grid = document.getElementById('video-grid');
     const card = document.createElement('div');
     card.className = 'video-card';
@@ -45,6 +46,7 @@ function timeSince(dateString) {
 }
 const My_ApiKEY = "AIzaSyBlzundZw5x067Ng-jVbNDXuQj_PECUNwc";
 async function FetchData(categoryId, maxResults = 3){
+    console.log(`API Call: Fetching category ${categoryId}...`);
     const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&chart=mostPopular&regionCode=IN&videoCategoryId=${categoryId}&maxResults=${maxResults}&key=${My_ApiKEY}`;
     try{
         const response = await fetch(url);
@@ -65,7 +67,9 @@ async function FetchData(categoryId, maxResults = 3){
         return [];
     }
 }
+
 async function getChannelVideos(channelId, maxResults = 3) {
+    console.log(`API Call: Fetching playlist IDs for channel ${channelId}...`);
     const uploadsPlaylistId = channelId.replace(/^UC/, 'UU');
     const playlistUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploadsPlaylistId}&maxResults=${maxResults}&key=${My_ApiKEY}`;
     
@@ -93,6 +97,7 @@ async function getChannelVideos(channelId, maxResults = 3) {
         return [];
     }
 }
+
 async function loadMixedFeed() {
     document.getElementById('video-grid').innerHTML = '';
     const beastBoyShub_ID = "UCI86prlqXhbkREDMTaORvLQ";
@@ -114,3 +119,40 @@ async function loadMixedFeed() {
     }
 }
 loadMixedFeed();
+
+const searchForm = document.querySelector('.search-form');
+const searchInput = document.getElementById('search');
+searchForm.addEventListener('submit', async function(e){
+    e.preventDefault();
+    const query = searchInput.value.trim();
+    if(!query) return;
+    const videoBox = document.getElementById('video-grid');
+    videoBox.innerHTML = '';
+    try{
+        console.log(`Search Initiated: "${query}"`);
+        console.log(`API Call 1/2: Searching for IDs...`);
+        const searchUrl = `https://youtube.googleapis.com/youtube/v3/search?part=id&maxResults=21&q=${encodeURIComponent(query)}&type=video&key=${My_ApiKEY}`;
+        const response  = await fetch(searchUrl);
+        const data = await response.json();
+        const videoIds = data.items.map(item => item.id.videoId).join(',');
+        console.log(`IDs found. 📡 API Call 2/2: Fetching rich data...`);
+        const videosUrl = `https://youtube.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=${videoIds}&key=${My_ApiKEY}`;
+        const videoResponse = await fetch(videosUrl);
+        const videoData = await videoResponse.json();
+        console.log(`Success: Search data formatting and card creation starting...`);
+        const VideosFormatter = videoData.items.map(item => ({
+            id: item.id,
+            title: item.snippet.title,
+            channel: item.snippet.channelTitle,
+            thumbnail: item.snippet.thumbnails.maxres ? item.snippet.thumbnails.maxres.url : 
+            (item.snippet.thumbnails.high ? item.snippet.thumbnails.high.url : item.snippet.thumbnails.default.url),
+            views: item.statistics.viewCount,
+            publishedAt: item.snippet.publishedAt,
+        }));
+        VideosFormatter.forEach(video =>{
+            CreateCard(video);
+        });
+    }catch(err){
+        console.log("Found Error while searching for videos : ",err);
+    }
+});
