@@ -98,13 +98,14 @@ async function loadMixedFeed() {
     const beastBoyShub_ID = "UCI86prlqXhbkREDMTaORvLQ";
     try{
         const[gamingVideos, comedyVideos, techVideos, bbsVideos] = await Promise.all([
-            FetchData('20', 4),
-            FetchData('23', 2),
-            FetchData('28', 4),
-            getChannelVideos(beastBoyShub_ID, 5),
+            FetchData('20', 6),
+            FetchData('23', 6),
+            FetchData('28', 6),
+            getChannelVideos(beastBoyShub_ID, 7),
         ]);
         let allVideos = [...gamingVideos, ...comedyVideos, ...techVideos, ...bbsVideos];
         allVideos = allVideos.sort(()=>Math.random() - 0.5);
+        allVideos = allVideos.slice(0, 21);
         allVideos.forEach(videoData => {
             CreateCard(videoData);
         });
