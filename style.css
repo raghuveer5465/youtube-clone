@@ -6,7 +6,6 @@ body {
     color: #fff;
     overflow: hidden;
 }
-
 .navbar {
     height: 56px;
     display: flex;
@@ -18,19 +17,16 @@ body {
     top: 0;
     z-index: 100;
 }
-
 .nav-left {
     display: flex;
     align-items: center;
     gap: 12x;
     cursor: pointer;
 }
-
 #bars {
     width: 24px;
     height: 24px;
 }
-
 .nav-center {
     display: flex;
     align-items: center;
@@ -40,7 +36,6 @@ body {
     margin: 0 40px;
     gap: 12px;
 }
-
 .search-form {
     display: flex;
     flex: 1;
@@ -292,4 +287,8 @@ h2 {
     .btn-mic {
         display: none;
     }
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }

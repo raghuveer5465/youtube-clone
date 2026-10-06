@@ -1,3 +1,4 @@
+const displayVideo = new Set();
 function ViewsConverter(views){
     if(views >= 1000000) return (views/1000000).toFixed(1) + 'M';
     if(views >= 1000) return (views/1000).toFixed(1) + 'K';
@@ -8,7 +9,7 @@ function CreateCard(videoData){
     const grid = document.getElementById('video-grid');
     const card = document.createElement('div');
     card.className = 'video-card';
-    /*  card.onclick = () => {
+    /* card.onclick = () => {
         window.open(`https://www.youtube.com/watch?v=${videoData.id}`, '_blank');
     }; */
     const ViewsCounted = ViewsConverter(videoData.views || 0);
@@ -29,6 +30,7 @@ function CreateCard(videoData){
     `;
     grid.appendChild(card);
 }
+
 function timeSince(dateString) {
     const date = new Date(dateString);
     const seconds = Math.floor((new Date() - date) / 1000);
@@ -112,6 +114,7 @@ async function loadMixedFeed() {
         allVideos = allVideos.sort(()=>Math.random() - 0.5);
         allVideos = allVideos.slice(0, 21);
         allVideos.forEach(videoData => {
+            displayVideo.add(videoData.id);
             CreateCard(videoData);
         });
     }catch(err){
@@ -128,6 +131,7 @@ searchForm.addEventListener('submit', async function(e){
     if(!query) return;
     const videoBox = document.getElementById('video-grid');
     videoBox.innerHTML = '';
+    displayVideo.clear();
     try{
         console.log(`Search Initiated: "${query}"`);
         console.log(`API Call 1/2: Searching for IDs...`);
@@ -150,9 +154,64 @@ searchForm.addEventListener('submit', async function(e){
             publishedAt: item.snippet.publishedAt,
         }));
         VideosFormatter.forEach(video =>{
+            displayVideo.add(video.id);
             CreateCard(video);
         });
     }catch(err){
         console.log("Found Error while searching for videos : ",err);
+    }
+});
+let isFetchingMore = false;
+const gridCards = document.getElementById('video-grid');
+const loader = document.getElementById('loading-spinner');
+
+gridCards.addEventListener('scroll', async ()=>{
+    const isAtBottom = gridCards.scrollTop + gridCards.clientHeight >= gridCards.scrollHeight - 200;
+    if(isAtBottom && !isFetchingMore){
+        isFetchingMore = true;
+        if(loader){
+        loader.style.display = 'block';
+        gridCards.appendChild(loader);
+    }else{
+        console.log("Loader HTML is missing from the page!");
+    }
+        const categories = ['20', '23', '28'];
+        const randomCategory = categories[Math.floor(Math.random()*categories.length)];
+        try{
+            console.log(`Scrolling: Fetching 6 more videos for category ${randomCategory}...`);
+            const newVideos = await FetchData(randomCategory, 25);
+            const uniqueVideos = newVideos.filter(video => !displayVideo.has(video.id));
+            const videosToRender = uniqueVideos.slice(0,6);
+            const fragment = document.createDocumentFragment();
+            videosToRender.forEach(videoData =>{
+                displayVideo.add(videoData.id);
+                const card = document.createElement('div');
+                card.className = 'video-card';
+                const viewsCounted = ViewsConverter(videoData.views || 0);
+                const timeago = timeSince(videoData.publishedAt);
+                const picUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(videoData.channel)}&background=random&color=fff`;
+                card.innerHTML = `
+                <div class="thumbnail-container">
+                        <img src="${videoData.thumbnail}" alt="Thumbnail">
+                    </div>
+                    <div class="video-info">
+                        <img class="channel-avatar" src="${picUrl}" alt="Channel Avatar">
+                        <div class="video-details">
+                            <h3 class="video-title">${videoData.title}</h3>
+                            <p class="channel-name">${videoData.channel}</p> 
+                            <p class="video-views">${viewsCounted} views • ${timeago}</p>
+                        </div>  
+                    </div>
+                `;
+                fragment.appendChild(card);
+            });
+            gridCards.insertBefore(fragment, loader);
+            loader.style.display = 'none';
+            isFetchingMore = false;
+        }catch(err){
+            console.log("Error loading more videos:", err);
+            loader.style.display = 'none';
+            isFetchingMore = false;
+        }
     }
 });
