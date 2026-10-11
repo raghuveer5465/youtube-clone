@@ -251,7 +251,7 @@ h2 {
 
 @media (max-width: 1024px) {
     .nav-center {
-        margin: 0 20px;
+        margin: 0 15px;
     }
 }
 
@@ -259,7 +259,6 @@ h2 {
     .create-text {
         display: none;
     }
-    
     .create-btn {
         padding: 0;
         width: 40px;
@@ -267,25 +266,74 @@ h2 {
         border-radius: 50%;
         justify-content: center;
     }
-    
     .brack {
-        display: none; 
+        display: flex;
+        position: fixed;
+        top: 56px; 
+        left: -260px;
+        height: calc(100vh - 56px);
+        width: 240px;
+        background-color: #0f0f0f;
+        z-index: 1000;
+        transition: left 0.3s ease;
+        border-right: 1px solid #333;
+        box-shadow: 5px 0 15px rgba(0,0,0,0.5);
     }
-
+    .brack.active {
+        left: 0;
+    }
     .video-grid {
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         padding: 16px;
+        gap: 20px 12px;
+    }
+    .modal-body {
+        flex-direction: column;
+        gap: 20px;
+    }
+    .modal-content {
+        width: 90vw;
+        padding: 16px;
     }
 }
-
 @media (max-width: 500px) {
-    .video-grid {
-        grid-template-columns: 1fr;
-        padding: 12px;
+    .navbar {
+        padding: 0 8px;
     }
-    
+    .nav-left h1 {
+        display: none; 
+    }
+    .nav-left svg:nth-child(2) {
+        margin-left: 5px;
+    }
+    .nav-center {
+        margin: 0 8px;
+    }
+    #search {
+        padding: 0 12px;
+        font-size: 14px;
+    }
+    #btn-search {
+        width: 50px;
+    }
     .btn-mic {
         display: none;
+    }
+    .icon-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 20px;
+    }
+    .video-grid {
+        grid-template-columns: 1fr;
+        padding: 0;
+        gap: 16px 0;
+    }
+    .thumbnail-container {
+        border-radius: 0;
+    }
+    .video-info {
+        padding: 0 12px;
     }
 }
 @keyframes spin {

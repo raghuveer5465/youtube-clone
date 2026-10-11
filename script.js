@@ -1,4 +1,20 @@
 const displayVideo = new Set();
+
+const menuBtn = document.getElementById('bars');
+const sidebar = document.querySelector('.brack');
+
+menuBtn.addEventListener('click', () => {
+    sidebar.classList.toggle('active');
+});
+
+document.addEventListener('click', (e) => {
+    if (window.innerWidth <= 768) {
+        if (!sidebar.contains(e.target) && !menuBtn.contains(e.target)) {
+            sidebar.classList.remove('active');
+        }
+    }
+});
+
 function ViewsConverter(views){
     if(views >= 1000000) return (views/1000000).toFixed(1) + 'M';
     if(views >= 1000) return (views/1000).toFixed(1) + 'K';
@@ -125,25 +141,43 @@ loadMixedFeed();
 
 const searchForm = document.querySelector('.search-form');
 const searchInput = document.getElementById('search');
+
+let isFetchingMore = false;
+let limitPopupShown = false;
+let isSearchActive = false;
+
 searchForm.addEventListener('submit', async function(e){
     e.preventDefault();
     const query = searchInput.value.trim();
     if(!query) return;
+    
+    isSearchActive = true; 
+    limitPopupShown = false;
+
     const videoBox = document.getElementById('video-grid');
+    videoBox.scrollTop = 0;
     videoBox.innerHTML = '';
     displayVideo.clear();
+    
     try{
         console.log(`Search Initiated: "${query}"`);
         console.log(`API Call 1/2: Searching for IDs...`);
-        const searchUrl = `https://youtube.googleapis.com/youtube/v3/search?part=id&maxResults=21&q=${encodeURIComponent(query)}&type=video&key=${My_ApiKEY}`;
+        const searchUrl = `https://youtube.googleapis.com/youtube/v3/search?part=id&maxResults=30&q=${encodeURIComponent(query)}&type=video&key=${My_ApiKEY}`;
         const response  = await fetch(searchUrl);
         const data = await response.json();
-        const videoIds = data.items.map(item => item.id.videoId).join(',');
+        
+        const searchIdsArray = data.items.map(item => item.id.videoId);
+        const videoIds = searchIdsArray.join(',');
+        
         console.log(`IDs found. 📡 API Call 2/2: Fetching rich data...`);
         const videosUrl = `https://youtube.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=${videoIds}&key=${My_ApiKEY}`;
         const videoResponse = await fetch(videosUrl);
         const videoData = await videoResponse.json();
+        
         console.log(`Success: Search data formatting and card creation starting...`);
+        
+        videoData.items.sort((a, b) => searchIdsArray.indexOf(a.id) - searchIdsArray.indexOf(b.id));
+        
         const VideosFormatter = videoData.items.map(item => ({
             id: item.id,
             title: item.snippet.title,
@@ -153,6 +187,7 @@ searchForm.addEventListener('submit', async function(e){
             views: item.statistics.viewCount,
             publishedAt: item.snippet.publishedAt,
         }));
+        
         VideosFormatter.forEach(video =>{
             displayVideo.add(video.id);
             CreateCard(video);
@@ -161,35 +196,97 @@ searchForm.addEventListener('submit', async function(e){
         console.log("Found Error while searching for videos : ",err);
     }
 });
-let isFetchingMore = false;
+
 const gridCards = document.getElementById('video-grid');
 const loader = document.getElementById('loading-spinner');
+gridCards.style.paddingBottom = "80px";
+if(loader){
+    loader.style.gridColumn = '1 / -1';
+}
+
+function showLimitPopup(title, message) {
+    if (document.getElementById('limit-popup')) {
+        document.getElementById('popup-title').innerText = title;
+        document.getElementById('popup-desc').innerText = message;
+        document.getElementById('limit-popup').style.display = 'flex';
+        return;
+    }
+    const popupOverlay = document.createElement('div');
+    popupOverlay.id = 'limit-popup';
+    popupOverlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 9999; display: flex; align-items: center; justify-content: center;';
+    popupOverlay.innerHTML = `
+        <div style="background: #212121; padding: 30px; border-radius: 12px; text-align: center; max-width: 350px; border: 1px solid #333; color: white;">
+            <h2 id="popup-title" style="margin-top: 0; font-size: 20px;">${title}</h2>
+            <p id="popup-desc" style="color: #aaa; line-height: 1.5; margin-bottom: 25px; font-size: 14px;">
+                ${message}
+            </p>
+            <button id="close-limit-btn" style="background: #3ea6ff; color: #0f0f0f; border: none; padding: 10px 24px; font-size: 16px; font-weight: bold; border-radius: 18px; cursor: pointer;">Okay</button>
+        </div>
+    `;
+    
+    document.body.appendChild(popupOverlay);
+    
+    document.getElementById('close-limit-btn').addEventListener('click', () => {
+        popupOverlay.style.display = 'none';
+    });
+}
 
 gridCards.addEventListener('scroll', async ()=>{
-    const isAtBottom = gridCards.scrollTop + gridCards.clientHeight >= gridCards.scrollHeight - 200;
-    if(isAtBottom && !isFetchingMore){
+    if(gridCards.scrollTop === 0) return;
+    const isAtBottom = gridCards.scrollTop + gridCards.clientHeight >= gridCards.scrollHeight - 200; 
+    if(isAtBottom && !isFetchingMore){    
+        if (isSearchActive) {
+            if (!limitPopupShown) {
+                showLimitPopup(
+                    "End of Search Results", 
+                    "We've loaded the top 30 videos for your search. To keep the API limits safe, search scrolling is capped for now. Try searching for a new term!"
+                );
+                limitPopupShown = true; 
+            }
+            return;
+        }
+        if (displayVideo.size >= 60) {
+            if (!limitPopupShown) {
+                showLimitPopup(
+                    "You've seen them all!", 
+                    "We've loaded 60 popular videos for you. If you are looking for something specific, please use the search bar at the top!"
+                );
+                limitPopupShown = true; 
+            }
+            return;
+        }
         isFetchingMore = true;
         if(loader){
-        loader.style.display = 'block';
-        gridCards.appendChild(loader);
-    }else{
-        console.log("Loader HTML is missing from the page!");
-    }
+            loader.style.display = 'block';
+            loader.innerHTML = '<i class="uil uil-spinner" style="font-size: 24px; display: inline-block; animation: spin 1s linear infinite;"></i><p style="margin-top: 5px; font-size: 14px;">Loading more videos...</p>';
+            gridCards.appendChild(loader);
+        }
         const categories = ['20', '23', '28'];
         const randomCategory = categories[Math.floor(Math.random()*categories.length)];
         try{
-            console.log(`Scrolling: Fetching 6 more videos for category ${randomCategory}...`);
+            console.log(`Scrolling: Fetching up to 25 more videos...`);
             const newVideos = await FetchData(randomCategory, 25);
             const uniqueVideos = newVideos.filter(video => !displayVideo.has(video.id));
-            const videosToRender = uniqueVideos.slice(0,6);
+            const safeMultipleOfThree = Math.floor(uniqueVideos.length / 3) * 3;
+            const remainingSlots = 60 - displayVideo.size;
+            const renderCount = Math.min(6, safeMultipleOfThree, remainingSlots);
+            const videosToRender = uniqueVideos.slice(0, renderCount);
+            if (videosToRender.length === 0) {
+                gridCards.scrollTop = gridCards.scrollTop - 200;
+                if(loader) loader.style.display = 'none';
+                isFetchingMore = false;
+                return;
+            } 
             const fragment = document.createDocumentFragment();
             videosToRender.forEach(videoData =>{
                 displayVideo.add(videoData.id);
+                
                 const card = document.createElement('div');
                 card.className = 'video-card';
                 const viewsCounted = ViewsConverter(videoData.views || 0);
                 const timeago = timeSince(videoData.publishedAt);
                 const picUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(videoData.channel)}&background=random&color=fff`;
+                
                 card.innerHTML = `
                 <div class="thumbnail-container">
                         <img src="${videoData.thumbnail}" alt="Thumbnail">
@@ -205,12 +302,14 @@ gridCards.addEventListener('scroll', async ()=>{
                 `;
                 fragment.appendChild(card);
             });
+            
             gridCards.insertBefore(fragment, loader);
             loader.style.display = 'none';
             isFetchingMore = false;
+            
         }catch(err){
             console.log("Error loading more videos:", err);
-            loader.style.display = 'none';
+            if(loader) loader.style.display = 'none';
             isFetchingMore = false;
         }
     }
