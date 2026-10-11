@@ -249,92 +249,65 @@ h2 {
     color: #fff;
 }
 
-@media (max-width: 1024px) {
-    .nav-center {
-        margin: 0 15px;
-    }
-}
-
 @media (max-width: 768px) {
-    .create-text {
-        display: none;
-    }
-    .create-btn {
-        padding: 0;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        justify-content: center;
-    }
     .brack {
-        display: flex;
         position: fixed;
-        top: 56px; 
+        top: 56px;
         left: -260px;
         height: calc(100vh - 56px);
         width: 240px;
         background-color: #0f0f0f;
         z-index: 1000;
         transition: left 0.3s ease;
-        border-right: 1px solid #333;
-        box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+        box-shadow: 5px 0 15px rgba(0,0,0,0.8);
+        display: flex; 
     }
+    
     .brack.active {
         left: 0;
     }
-    .video-grid {
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        padding: 16px;
-        gap: 20px 12px;
-    }
-    .modal-body {
-        flex-direction: column;
-        gap: 20px;
-    }
-    .modal-content {
-        width: 90vw;
-        padding: 16px;
-    }
-}
-@media (max-width: 500px) {
+
     .navbar {
-        padding: 0 8px;
-    }
-    .nav-left h1 {
-        display: none; 
-    }
-    .nav-left svg:nth-child(2) {
-        margin-left: 5px;
+        padding: 0 12px;
+        gap: 10px;
     }
     .nav-center {
-        margin: 0 8px;
+        margin: 0;
     }
-    #search {
-        padding: 0 12px;
-        font-size: 14px;
+    
+    .btn-mic { display: none; }
+    .nav-right button:nth-child(2) { display: none; }
+
+    .create-text { display: none; }
+    .create-btn {
+        width: 36px; height: 36px;
+        padding: 0; border-radius: 50%;
+        justify-content: center;
     }
-    #btn-search {
-        width: 50px;
-    }
-    .btn-mic {
-        display: none;
-    }
-    .icon-btn {
-        width: 32px;
-        height: 32px;
-        font-size: 20px;
-    }
+
     .video-grid {
         grid-template-columns: 1fr;
         padding: 0;
-        gap: 16px 0;
+        gap: 0; 
+    }
+    .video-card {
+        margin-bottom: 24px;
     }
     .thumbnail-container {
         border-radius: 0;
     }
     .video-info {
-        padding: 0 12px;
+        padding: 12px 12px 0 12px;
     }
+}
+@media (max-width: 500px) {
+    .nav-left h1 { display: none; } 
+    .nav-left svg:nth-child(2) { margin-left: 5px; } 
+    #search { padding: 0 10px; font-size: 14px; }
+    .search-form { height: 34px; }
+    #btn-search { width: 45px; height: 34px; }
+    
+    .icon-btn { width: 34px; height: 34px; }
 }
 @keyframes spin {
     0% { transform: rotate(0deg); }

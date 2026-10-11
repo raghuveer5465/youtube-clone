@@ -1,20 +1,19 @@
 const displayVideo = new Set();
-
 const menuBtn = document.getElementById('bars');
 const sidebar = document.querySelector('.brack');
 
-menuBtn.addEventListener('click', () => {
+menuBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
     sidebar.classList.toggle('active');
 });
 
 document.addEventListener('click', (e) => {
     if (window.innerWidth <= 768) {
-        if (!sidebar.contains(e.target) && !menuBtn.contains(e.target)) {
+        if (sidebar.classList.contains('active') && !sidebar.contains(e.target) && !menuBtn.contains(e.target)) {
             sidebar.classList.remove('active');
         }
     }
 });
-
 function ViewsConverter(views){
     if(views >= 1000000) return (views/1000000).toFixed(1) + 'M';
     if(views >= 1000) return (views/1000).toFixed(1) + 'K';
