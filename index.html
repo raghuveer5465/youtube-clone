@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Double:wght@100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css">
     <link rel="stylesheet" href="style.css">
     <title>MyTube Project</title>
-    <meta name="google-site-verification" content="7ionVHKnHyBoI3vl1DKxvpFEyV6biAFdfZBL4f3q7nk" />
 </head>
 <body>
     <nav class="navbar" id="top-navbar">
@@ -20,8 +19,9 @@
                 <rect width="40" height="30" rx="8" fill="#FF0000"/>
                 <path d="M26 15L16 21V9L26 15Z" fill="white"/>
             </svg>
-            <h1 style="color: white; font-size: 18px; font-family: 'Roboto', sans-serif; font-weight: 700; letter-spacing: -1px; margin: 0;">MyTube</h1>
+            <h1 class="logo-text">MyTube</h1>
         </div>
+        
         <div class="nav-center">
             <form class="search-form">
                 <input type="search" name="q" id="search" placeholder="Search">
@@ -33,6 +33,7 @@
             </form>
             <button class="icon-btn btn-mic"><i class="uil uil-microphone"></i></button>
         </div>
+
         <div class="nav-right">
             <button class="icon-btn mobile-search-trigger" style="display:none;"><i class="uil uil-search"></i></button>
             <button class="icon-btn"><i class="uil uil-bell"></i></button>
@@ -52,10 +53,10 @@
         <div id="search-history-list" class="search-history-list"></div>
     </div>
 
-    <div id="subscribe-modal" class="search-overlay" style="display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.8); backdrop-filter: blur(10px);">
-        <div style="background:#212121; padding:30px; border-radius:12px; text-align:center; color:white; border: 1px solid #333; max-width: 300px;">
+    <div id="subscribe-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 3000; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.5); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);">
+        <div style="background:#212121; padding:30px; border-radius:12px; text-align:center; color:white; border: 1px solid #333; max-width: 300px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
             <h3 id="sub-modal-title" style="margin-top:0;">Subscribe?</h3>
-            <p style="color: #aaa; font-size: 14px; margin-bottom: 20px;">Add this channel to your subscriptions.</p>
+            <p id="sub-modal-desc" style="color: #aaa; font-size: 14px; margin-bottom: 20px;">Add this channel to your subscriptions.</p>
             <div style="display: flex; gap: 10px; justify-content: center;">
                 <button id="cancel-sub-btn" style="background:#333; color:#fff; border:none; padding:10px 20px; cursor:pointer; border-radius:18px; font-weight: bold;">Cancel</button>
                 <button id="confirm-sub-btn" style="background:#f00; color:#fff; border:none; padding:10px 20px; cursor:pointer; border-radius:18px; font-weight: bold;">Subscribe</button>
@@ -63,26 +64,18 @@
         </div>
     </div>
 
+    <div id="toast-notification" style="position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: #3ea6ff; color: #000; padding: 12px 24px; border-radius: 24px; font-weight: bold; font-size: 14px; z-index: 4000; transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 5px 15px rgba(62,166,255,0.4); display: flex; align-items: center; gap: 8px;">
+        <i class="uil uil-lightbulb-alt" style="font-size: 18px;"></i>
+        <span style="white-space: nowrap;">Pro Tip: Press and hold a video to subscribe!</span>
+        <button id="close-toast-btn" style="background: none; border: none; font-size: 18px; margin-left: 10px; cursor: pointer; color: #000; display: flex; align-items: center;"><i class="uil uil-times"></i></button>
+    </div>
+
     <nav class="bottom-nav" id="bottom-navbar">
-        <button class="bottom-nav-item active" id="mobile-home-btn">
-            <i class="uil uil-estate"></i>
-            <span>Home</span>
-        </button>
-        <button class="bottom-nav-item">
-            <i class="uil uil-bolt-alt"></i>
-            <span>Shorts</span>
-        </button>
-        <button class="bottom-nav-item create-btn-mobile">
-            <i class="uil uil-plus-circle"></i>
-        </button>
-        <button class="bottom-nav-item">
-            <i class="uil uil-tv-retro"></i>
-            <span>Subs</span>
-        </button>
-        <button class="bottom-nav-item">
-            <i class="uil uil-user"></i>
-            <span>You</span>
-        </button>
+        <button class="bottom-nav-item active" id="mobile-home-btn"><i class="uil uil-estate"></i><span>Home</span></button>
+        <button class="bottom-nav-item"><i class="uil uil-bolt-alt"></i><span>Shorts</span></button>
+        <button class="bottom-nav-item create-btn-mobile"><i class="uil uil-plus-circle"></i></button>
+        <button class="bottom-nav-item"><i class="uil uil-tv-retro"></i><span>Subs</span></button>
+        <button class="bottom-nav-item"><i class="uil uil-user"></i><span>You</span></button>
     </nav>
 
     <div class="main-body">
@@ -96,6 +89,7 @@
             <div><button class="home">Your Videos</button></div>
             <div><button class="home">Liked Videos</button></div>
             <hr>
+            
             <div id="dynamic-subs-container">
                 <h2>Subscriptions</h2>
             </div>
@@ -108,6 +102,7 @@
             <p style="margin-top: 5px; font-size: 14px;">Loading more videos...</p>
         </div>
     </div>
+    
     <script src="script.js"></script>
 </body>
 </html>

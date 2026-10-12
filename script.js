@@ -24,14 +24,26 @@ const searchHistoryList = document.getElementById('search-history-list');
 const subModal = document.getElementById('subscribe-modal');
 const subsContainer = document.getElementById('dynamic-subs-container');
 
-if(loader) {
-    loader.style.gridColumn = '1 / -1';
-}
-
+if(loader) { loader.style.gridColumn = '1 / -1'; }
 gridCards.style.paddingBottom = "80px";
 
 let mySubs = JSON.parse(localStorage.getItem('mytube_subscriptions')) || [];
 let searchHistory = JSON.parse(localStorage.getItem('mytube_history')) || [];
+
+const toast = document.getElementById('toast-notification');
+if (!localStorage.getItem('mytube_onboarded')) {
+    setTimeout(() => {
+        toast.style.bottom = window.innerWidth <= 768 ? '70px' : '30px'; 
+        setTimeout(() => {
+            toast.style.bottom = '-100px';
+            localStorage.setItem('mytube_onboarded', 'true');
+        }, 6000);
+    }, 1500);
+}
+document.getElementById('close-toast-btn').addEventListener('click', () => {
+    toast.style.bottom = '-100px';
+    localStorage.setItem('mytube_onboarded', 'true');
+});
 
 function ViewsConverter(views) {
     if (views >= 1000000) return (views / 1000000).toFixed(1) + 'M';
@@ -77,46 +89,67 @@ function CreateCard(videoData) {
         </div>
     `;
 
-    let pressTimer;
+    let pressTimer = null;
+    let isHolding = false;
+    let startX = 0;
+    let startY = 0;
     
-    const startPress = (e) => {
-        // Ignore right-clicks on a mouse
-        if (e.type === 'mousedown' && e.button !== 0) return; 
-        
-        // Add the scale-up animation immediately
+    const startHold = (x, y) => {
+        if (isHolding) return; 
+        isHolding = true;
+        startX = x;
+        startY = y;
         card.classList.add('pressing');
         
-        pressTimer = window.setTimeout(() => {
-            card.classList.remove('pressing');
-            openSubscribeModal(videoData);
-        }, 1000);
-    }; 
+        pressTimer = setTimeout(() => {
+            if (isHolding) {
+                card.classList.remove('pressing');
+                openSubscribeModal(videoData);
+                isHolding = false; 
+            }
+        }, 800); 
+    };
     
-    const cancelPress = () => {
-        clearTimeout(pressTimer);
+    const cancelHold = () => {
+        isHolding = false;
+        if (pressTimer) clearTimeout(pressTimer);
         card.classList.remove('pressing');
     };
 
-    card.addEventListener('contextmenu', (e) => {
-        e.preventDefault(); 
+    card.addEventListener('contextmenu', (e) => e.preventDefault());
+    
+    card.addEventListener('touchstart', (e) => {
+        startHold(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+    
+    card.addEventListener('touchmove', (e) => {
+        if (!isHolding) return;
+        if (Math.abs(e.touches[0].clientX - startX) > 20 || Math.abs(e.touches[0].clientY - startY) > 20) {
+            cancelHold();
+        }
+    }, { passive: true });
+
+    card.addEventListener('touchend', cancelHold);
+    card.addEventListener('touchcancel', cancelHold);
+
+    card.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return;
+        startHold(e.clientX, e.clientY);
+    });
+    
+    card.addEventListener('mousemove', (e) => {
+        if (!isHolding) return;
+        if (Math.abs(e.clientX - startX) > 20 || Math.abs(e.clientY - startY) > 20) {
+            cancelHold();
+        }
     });
 
-    // Handle Desktop
-    card.addEventListener('mousedown', startPress);
-    card.addEventListener('mouseup', cancelPress);
-    card.addEventListener('mouseleave', cancelPress);
-    
-    // Handle Mobile
-    card.addEventListener('touchstart', startPress, {passive: true});
-    card.addEventListener('touchend', cancelPress);
-    card.addEventListener('touchcancel', cancelPress);
-    
-    // If the user starts dragging their finger to scroll, cancel the hold
-    card.addEventListener('touchmove', cancelPress, {passive: true});
-    grid.addEventListener('scroll', cancelPress);
-    
+    card.addEventListener('mouseup', cancelHold);
+    card.addEventListener('mouseleave', cancelHold);
+
     grid.appendChild(card);
 }
+
 
 async function FetchData(categoryId, maxResults = 3) {
     const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&chart=mostPopular&regionCode=IN&videoCategoryId=${categoryId}&maxResults=${maxResults}&key=${My_ApiKEY}`;
@@ -133,9 +166,7 @@ async function FetchData(categoryId, maxResults = 3) {
             views: item.statistics.viewCount,
             publishedAt: item.snippet.publishedAt,
         }));
-    } catch (err) {
-        return [];
-    }
+    } catch (err) { return []; }
 }
 
 async function getChannelVideos(channelId, maxResults = 3) {
@@ -160,18 +191,28 @@ async function getChannelVideos(channelId, maxResults = 3) {
             views: item.statistics.viewCount,
             publishedAt: item.snippet.publishedAt,
         }));
-    } catch (err) {
-        return [];
-    }
+    } catch (err) { return []; }
 }
 
 function renderSubscriptions() {
     subsContainer.innerHTML = '<h2>Subscriptions</h2>';
+    
+    if (mySubs.length === 0) {
+        subsContainer.innerHTML += '<p style="color: #aaa; font-size: 13px; padding: 10px 12px; line-height: 1.5; margin: 0;">No subscriptions yet.<br><br>💡 Try long-pressing on any video to subscribe to the channel!</p>';
+        return;
+    }
+
     mySubs.forEach(sub => {
-        const btnDiv = document.createElement('div');
+        const rowDiv = document.createElement('div');
+        rowDiv.style.display = 'flex';
+        rowDiv.style.alignItems = 'center';
+        rowDiv.style.justifyContent = 'space-between';
+        rowDiv.style.paddingRight = '12px';
+
         const btn = document.createElement('button');
         btn.className = 'home';
         btn.innerText = sub.name;
+        btn.style.flex = '1';
         
         btn.addEventListener('click', async () => {
             isSearchActive = true; 
@@ -192,25 +233,52 @@ function renderSubscriptions() {
             });
         });
         
-        btnDiv.appendChild(btn);
-        subsContainer.appendChild(btnDiv);
+        const unsubBtn = document.createElement('button');
+        unsubBtn.innerHTML = '<i class="uil uil-times"></i>';
+        unsubBtn.className = 'unsub-btn';
+        unsubBtn.addEventListener('click', () => {
+            mySubs = mySubs.filter(s => s.id !== sub.id);
+            localStorage.setItem('mytube_subscriptions', JSON.stringify(mySubs));
+            renderSubscriptions();
+        });
+
+        rowDiv.appendChild(btn);
+        rowDiv.appendChild(unsubBtn);
+        subsContainer.appendChild(rowDiv);
     });
 }
 renderSubscriptions();
 
 function openSubscribeModal(video) {
     targetSubChannel = video;
-    document.getElementById('sub-modal-title').innerText = `Subscribe to ${video.channel}?`;
+    const isSubbed = mySubs.find(s => s.id === video.channelId);
+    
+    if (isSubbed) {
+        document.getElementById('sub-modal-title').innerText = `Unsubscribe from ${video.channel}?`;
+        document.getElementById('sub-modal-desc').innerText = `Remove this channel from your subscriptions.`;
+        document.getElementById('confirm-sub-btn').innerText = "Unsubscribe";
+        document.getElementById('confirm-sub-btn').style.background = "#555";
+    } else {
+        document.getElementById('sub-modal-title').innerText = `Subscribe to ${video.channel}?`;
+        document.getElementById('sub-modal-desc').innerText = `Add this channel to your subscriptions.`;
+        document.getElementById('confirm-sub-btn').innerText = "Subscribe";
+        document.getElementById('confirm-sub-btn').style.background = "#f00";
+    }
+    
     subModal.style.display = 'flex';
 }
 
 document.getElementById('confirm-sub-btn').addEventListener('click', () => {
     if (targetSubChannel) {
-        if (!mySubs.find(s => s.id === targetSubChannel.channelId)) {
+        const isSubbed = mySubs.find(s => s.id === targetSubChannel.channelId);
+        
+        if (isSubbed) {
+            mySubs = mySubs.filter(s => s.id !== targetSubChannel.channelId);
+        } else {
             mySubs.push({ name: targetSubChannel.channel, id: targetSubChannel.channelId });
-            localStorage.setItem('mytube_subscriptions', JSON.stringify(mySubs));
-            renderSubscriptions();
         }
+        localStorage.setItem('mytube_subscriptions', JSON.stringify(mySubs));
+        renderSubscriptions();
     }
     subModal.style.display = 'none';
 });
@@ -347,6 +415,7 @@ gridCards.addEventListener('scroll', async () => {
     lastScrollY = currentScrollY;
 
     const isAtBottom = gridCards.scrollTop + gridCards.clientHeight >= gridCards.scrollHeight - 200;
+    
     if (isAtBottom && !isFetchingMore) {
         if (isSearchActive) {
             if (!limitPopupShown) {
@@ -378,18 +447,21 @@ gridCards.addEventListener('scroll', async () => {
             const newVideos = await FetchData(randomCategory, 50);
             const uniqueVideos = newVideos.filter(video => !displayVideo.has(video.id));
 
-            const safeMultipleOfThree = Math.floor(uniqueVideos.length / 3) * 3;
-            const remainingSlots = 60 - displayVideo.size;
-
-            const renderCount = Math.min(6, safeMultipleOfThree, remainingSlots);
-            const videosToRender = uniqueVideos.slice(0, renderCount);
-
-            if (videosToRender.length === 0) {
-                gridCards.scrollTop = gridCards.scrollTop - 200;
+            if (uniqueVideos.length === 0) {
                 if (loader) loader.style.display = 'none';
                 isFetchingMore = false;
                 return;
             }
+
+            const safeMultipleOfThree = Math.floor(uniqueVideos.length / 3) * 3;
+            const remainingSlots = 60 - displayVideo.size;
+            
+            let renderCount = Math.min(6, remainingSlots);
+            if (safeMultipleOfThree > 0 && safeMultipleOfThree < renderCount) {
+                renderCount = safeMultipleOfThree;
+            }
+            
+            const videosToRender = uniqueVideos.slice(0, renderCount);
 
             const fragment = document.createDocumentFragment();
             videosToRender.forEach(videoData => {
@@ -400,6 +472,12 @@ gridCards.addEventListener('scroll', async () => {
             gridCards.insertBefore(fragment, loader);
             loader.style.display = 'none';
             isFetchingMore = false;
+            
+            if (displayVideo.size >= 60 && !limitPopupShown) {
+                showLimitPopup("You've seen them all!", "We've loaded 60 popular videos for you. If you are looking for something specific, please use the search bar at the top!");
+                limitPopupShown = true;
+            }
+            
         } catch (err) {
             if (loader) loader.style.display = 'none';
             isFetchingMore = false;
