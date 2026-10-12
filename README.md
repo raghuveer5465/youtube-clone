@@ -28,20 +28,8 @@ MyTube operates on a **JAMstack** architecture (JavaScript, APIs, and Markup). T
 
 ```mermaid
 graph TD
-    %% Core Architecture
-    Client([User Browser]) <-->|Scrolls, Clicks & Long-Presses| UI[DOM Interface]
-    UI <-->|Fetches Videos & Channel Logos| API((YouTube Data API v3))
-    
-    %% Storage
-    UI <-->|Saves Subs & Search History| LS[(Local Storage)]
-    
-    %% PWA Features
-    SW{Service Worker} -.->|Intercepts Network Requests| Client
-    SW <-->|Caches Assets for Offline Use| Static[HTML/CSS/JS Assets]
-    
-    %% Styling
-    classDef default fill:#f4f4f4,stroke:#333,stroke-width:2px,color:#000;
-    classDef api fill:#f9f,stroke:#333,stroke-width:2px,color:#000;
-    classDef storage fill:#ff9,stroke:#333,stroke-width:2px,color:#000;
-    class API api;
-    class LS storage;
+    Client([📱 User Browser]) <-->|Scrolls & Gestures| UI[🖥️ DOM Interface]
+    UI <-->|Fetches Data| API((🌐 YouTube Data API v3))
+    UI <-->|Saves Subs & History| LS[(💾 Local Storage)]
+    SW{⚡ Service Worker} -.->|Intercepts Requests| Client
+    SW <-->|Caches Offline Assets| Static[📁 Static HTML/JS Files]
