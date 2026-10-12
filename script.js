@@ -45,6 +45,29 @@ document.getElementById('close-toast-btn').addEventListener('click', () => {
     localStorage.setItem('mytube_onboarded', 'true');
 });
 
+function parseDuration(duration) {
+    if (!duration) return "0:00";
+    const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
+    const hours = (parseInt(match[1]) || 0);
+    const minutes = (parseInt(match[2]) || 0);
+    const seconds = (parseInt(match[3]) || 0);
+    let result = "";
+    if (hours > 0) result += hours + ":";
+    result += (hours > 0 ? minutes.toString().padStart(2, '0') : minutes) + ":";
+    result += seconds.toString().padStart(2, '0');
+    return result;
+}
+function playVideo(videoData) {
+    document.getElementById('playing-video-title').innerText = videoData.title;
+    const iframeContainer = document.getElementById('iframe-container');
+    iframeContainer.innerHTML = `<iframe width="100%" height="100%" style="max-width: 1000px; max-height: 560px; aspect-ratio: 16/9; border: none;" src="https://www.youtube.com/embed/${videoData.id}?autoplay=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+    document.getElementById('video-player-modal').style.display = 'flex';
+}
+document.getElementById('close-player-btn').addEventListener('click', () => {
+    document.getElementById('video-player-modal').style.display = 'none';
+    document.getElementById('iframe-container').innerHTML = '';
+});
+
 function ViewsConverter(views) {
     if (views >= 1000000) return (views / 1000000).toFixed(1) + 'M';
     if (views >= 1000) return (views / 1000).toFixed(1) + 'K';
@@ -73,11 +96,11 @@ function CreateCard(videoData) {
     card.className = 'video-card';
     const ViewsCounted = ViewsConverter(videoData.views || 0);
     const timeAgo = timeSince(videoData.publishedAt);
-
     
     card.innerHTML = `
         <div class="thumbnail-container">
             <img src="${videoData.thumbnail}" alt="Thumbnail" draggable="false">
+            <span class="duration-badge">${videoData.duration}</span> <!-- 💡 Timestamp Added! -->
         </div>
         <div class="video-info">
             <img class="channel-avatar" src="${videoData.channelLogo}" alt="Channel Avatar" draggable="false">
@@ -91,21 +114,24 @@ function CreateCard(videoData) {
 
     let pressTimer = null;
     let isHolding = false;
+    let isLongPressFired = false;
     let startX = 0;
     let startY = 0;
     
     const startHold = (x, y) => {
         if (isHolding) return; 
         isHolding = true;
+        isLongPressFired = false;
         startX = x;
         startY = y;
         card.classList.add('pressing');
         
         pressTimer = setTimeout(() => {
             if (isHolding) {
+                isLongPressFired = true;
                 card.classList.remove('pressing');
                 openSubscribeModal(videoData);
-                isHolding = false; 
+                isHolding = false;
             }
         }, 800); 
     };
@@ -139,13 +165,17 @@ function CreateCard(videoData) {
     
     card.addEventListener('mousemove', (e) => {
         if (!isHolding) return;
-        if (Math.abs(e.clientX - startX) > 20 || Math.abs(e.clientY - startY) > 20) {
-            cancelHold();
-        }
+        if (Math.abs(e.clientX - startX) > 20 || Math.abs(e.clientY - startY) > 20) cancelHold();
     });
 
     card.addEventListener('mouseup', cancelHold);
     card.addEventListener('mouseleave', cancelHold);
+
+    card.addEventListener('click', (e) => {
+        if (!isLongPressFired) {
+            playVideo(videoData);
+        }
+    });
 
     grid.appendChild(card);
 }
@@ -173,12 +203,13 @@ async function formatWithChannelLogos(items) {
         thumbnail: item.snippet.thumbnails.maxres ? item.snippet.thumbnails.maxres.url : (item.snippet.thumbnails.high ? item.snippet.thumbnails.high.url : item.snippet.thumbnails.default.url),
         views: item.statistics ? item.statistics.viewCount : 0,
         publishedAt: item.snippet.publishedAt,
+        duration: item.contentDetails ? parseDuration(item.contentDetails.duration) : "0:00",
         channelLogo: logosDict[item.snippet.channelId] || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.snippet.channelTitle)}&background=random&color=fff`
     }));
 }
 
 async function FetchData(categoryId, maxResults = 3) {
-    const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&chart=mostPopular&regionCode=IN&videoCategoryId=${categoryId}&maxResults=${maxResults}&key=${My_ApiKEY}`;
+    const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails&chart=mostPopular&regionCode=IN&videoCategoryId=${categoryId}&maxResults=${maxResults}&key=${My_ApiKEY}`;
     try {
         const response = await fetch(url);
         if (!response.ok) throw new Error(`Http error Status: ${response.status}`);
@@ -196,7 +227,7 @@ async function getChannelVideos(channelId, maxResults = 3) {
         const videoIds = playlistResult.items.map(item => item.snippet.resourceId.videoId).join(',');
         if (!videoIds) return [];
 
-        const videosUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${videoIds}&key=${My_ApiKEY}`;
+        const videosUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails&id=${videoIds}&key=${My_ApiKEY}`;
         const videosRes = await fetch(videosUrl);
         const videosResult = await videosRes.json();
         return await formatWithChannelLogos(videosResult.items);

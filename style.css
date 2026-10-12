@@ -411,6 +411,22 @@ h2 {
 .bottom-nav-item.active i, .bottom-nav-item.active span { font-weight: bold; }
 .create-btn-mobile i { font-size: 38px; font-weight: 300; margin-top: -5px; }
 
+.thumbnail-container {
+    position: relative;
+}
+.duration-badge {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 3px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+}
+
 @media (max-width: 768px) {
     .nav-center { display: none; }
     .desktop-only { display: none !important; }

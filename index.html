@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css">
     <link rel="stylesheet" href="style.css">
     <title>MyTube Project</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f0f0f">
 </head>
 <body>
     <nav class="navbar" id="top-navbar">
@@ -101,7 +103,23 @@
             <p style="margin-top: 5px; font-size: 14px;">Loading more videos...</p>
         </div>
     </div>
-    
+    <div id="video-player-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 5000; flex-direction: column;">
+        <div style="padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; background: #0f0f0f; border-bottom: 1px solid #272727;">
+            <h3 id="playing-video-title" style="margin: 0; font-size: 16px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80%;">Playing Video</h3>
+            <button id="close-player-btn" style="background:none; border:none; color:white; font-size: 28px; cursor: pointer;"><i class="uil uil-times"></i></button>
+        </div>
+        <div id="iframe-container" style="flex: 1; width: 100%; display: flex; justify-content: center; align-items: center; background: #000;">
+        </div>
+    </div>
     <script src="script.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(reg => console.log('Service Worker Registered!', reg))
+                    .catch(err => console.error('Service Worker Registration Failed!', err));
+            });
+        }
+    </script>
 </body>
 </html>
