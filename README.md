@@ -26,10 +26,20 @@ A high-performance, client-side dynamic Single Page Application (SPA) built to r
 
 MyTube operates on a **JAMstack** architecture (JavaScript, APIs, and Markup). There is no backend server; all logic, state management, and API routing are handled dynamically in the client's browser.
 
-```mermaid
-graph TD
-    Client([📱 User Browser]) <-->|Scrolls & Gestures| UI[🖥️ DOM Interface]
-    UI <-->|Fetches Data| API((🌐 YouTube Data API v3))
-    UI <-->|Saves Subs & History| LS[(💾 Local Storage)]
-    SW{⚡ Service Worker} -.->|Intercepts Requests| Client
-    SW <-->|Caches Offline Assets| Static[📁 Static HTML/JS Files]
+![System Architecture](./architecture.png)
+
+---
+
+## ⚙️ How It Works Under the Hood
+
+### 1. The Interaction Engine (Custom Event Listeners)
+To provide a native mobile feel in a web browser, standard `<button>` tags were abandoned. Instead, the app utilizes a custom event listener matrix that tracks `touchstart`, `touchend`, `touchmove`, `mousedown`, and `mouseup` to calculate gesture intent.
+
+![Interaction Engine](./interaction.png)
+
+### 2. Intelligent Data Fetching
+To minimize YouTube API Quota limits, the application heavily optimizes network requests:
+1. Video data is fetched by category.
+2. Channel IDs are extracted and deduplicated.
+3. A single, batched API request is sent to fetch channel logos for up to 50 videos simultaneously.
+4. Data is mapped and formatted before injecting it into the DOM.
