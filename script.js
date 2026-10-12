@@ -8,7 +8,7 @@ let lastScrollY = 0;
 let targetSubChannel = null;
 
 const gridCards = document.getElementById('video-grid');
-const loader = document.getElementById('loading-spinner');
+//const loader = document.getElementById('loading-spinner');
 const topNav = document.getElementById('top-navbar');
 const bottomNav = document.getElementById('bottom-navbar');
 const searchForm = document.querySelector('.search-form');
@@ -24,7 +24,7 @@ const searchHistoryList = document.getElementById('search-history-list');
 const subModal = document.getElementById('subscribe-modal');
 const subsContainer = document.getElementById('dynamic-subs-container');
 
-if(loader) { loader.style.gridColumn = '1 / -1'; }
+//if(loader) { loader.style.gridColumn = '1 / -1'; }
 gridCards.style.paddingBottom = "80px";
 
 let mySubs = JSON.parse(localStorage.getItem('mytube_subscriptions')) || [];
@@ -44,6 +44,30 @@ document.getElementById('close-toast-btn').addEventListener('click', () => {
     toast.style.bottom = '-100px';
     localStorage.setItem('mytube_onboarded', 'true');
 });
+
+function showSkeletons(count = 6) {
+    const grid = document.getElementById('video-grid');
+    for (let i = 0; i < count; i++) {
+        const skeleton = document.createElement('div');
+        skeleton.className = 'skeleton-card';
+        skeleton.innerHTML = `
+            <div class="skeleton-thumbnail"></div>
+            <div class="skeleton-info">
+                <div class="skeleton-avatar"></div>
+                <div class="skeleton-details">
+                    <div class="skeleton-line"></div>
+                    <div class="skeleton-line short"></div>
+                </div>
+            </div>
+        `;
+        grid.appendChild(skeleton);
+    }
+}
+
+function removeSkeletons() {
+    const skeletons = document.querySelectorAll('.skeleton-card');
+    skeletons.forEach(skel => skel.remove());
+}
 
 function parseDuration(duration) {
     if (!duration) return "0:00";
@@ -353,6 +377,7 @@ document.getElementById('mobile-home-btn').addEventListener('click', goHome);
 async function loadMixedFeed() {
     document.getElementById('video-grid').innerHTML = '';
     displayVideo.clear();
+    showSkeletons(12);
     const beastBoyShub_ID = "UCI86prlqXhbkREDMTaORvLQ";
     try {
         const [gamingVideos, comedyVideos, techVideos, bbsVideos] = await Promise.all([
@@ -361,11 +386,14 @@ async function loadMixedFeed() {
         let allVideos = [...gamingVideos, ...comedyVideos, ...techVideos, ...bbsVideos];
         allVideos = allVideos.sort(() => Math.random() - 0.5);
         allVideos = allVideos.slice(0, 21);
+        removeSkeletons();
         allVideos.forEach(videoData => {
             displayVideo.add(videoData.id);
             CreateCard(videoData);
         });
-    } catch (err) {}
+    } catch (err) {
+        removeSkeletons();
+    }
 }
 
 loadMixedFeed();
@@ -469,11 +497,7 @@ gridCards.addEventListener('scroll', async () => {
         }
 
         isFetchingMore = true;
-        if (loader) {
-            loader.style.display = 'block';
-            loader.innerHTML = '<i class="uil uil-spinner" style="font-size: 24px; display: inline-block; animation: spin 1s linear infinite;"></i><p style="margin-top: 5px; font-size: 14px;">Loading more videos...</p>';
-            gridCards.appendChild(loader);
-        }
+        showSkeletons(6);
 
         const categories = ['20', '23', '28'];
         const randomCategory = categories[Math.floor(Math.random() * categories.length)];
