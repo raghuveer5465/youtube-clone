@@ -73,14 +73,14 @@ function CreateCard(videoData) {
     card.className = 'video-card';
     const ViewsCounted = ViewsConverter(videoData.views || 0);
     const timeAgo = timeSince(videoData.publishedAt);
-    const picURL = `https://ui-avatars.com/api/?name=${encodeURIComponent(videoData.channel)}&background=random&color=fff`;
+
     
     card.innerHTML = `
         <div class="thumbnail-container">
             <img src="${videoData.thumbnail}" alt="Thumbnail" draggable="false">
         </div>
         <div class="video-info">
-            <img class="channel-avatar" src="${picURL}" alt="Channel Avatar" draggable="false">
+            <img class="channel-avatar" src="${videoData.channelLogo}" alt="Channel Avatar" draggable="false">
             <div class="video-details">
                 <h3 class="video-title">${videoData.title}</h3>
                 <p class="channel-name">${videoData.channel}</p> 
@@ -150,6 +150,32 @@ function CreateCard(videoData) {
     grid.appendChild(card);
 }
 
+async function formatWithChannelLogos(items) {
+    const uniqueIds = [...new Set(items.map(item => item.snippet.channelId))].slice(0, 50);
+    const logosDict = {};
+    
+    try {
+        const url = `https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${uniqueIds.join(',')}&key=${My_ApiKEY}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.items) {
+            data.items.forEach(ch => {
+                logosDict[ch.id] = ch.snippet.thumbnails.default.url;
+            });
+        }
+    } catch (e) { console.log("Failed to fetch logos"); }
+
+    return items.map(item => ({
+        id: item.id,
+        title: item.snippet.title,
+        channel: item.snippet.channelTitle,
+        channelId: item.snippet.channelId,
+        thumbnail: item.snippet.thumbnails.maxres ? item.snippet.thumbnails.maxres.url : (item.snippet.thumbnails.high ? item.snippet.thumbnails.high.url : item.snippet.thumbnails.default.url),
+        views: item.statistics ? item.statistics.viewCount : 0,
+        publishedAt: item.snippet.publishedAt,
+        channelLogo: logosDict[item.snippet.channelId] || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.snippet.channelTitle)}&background=random&color=fff`
+    }));
+}
 
 async function FetchData(categoryId, maxResults = 3) {
     const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&chart=mostPopular&regionCode=IN&videoCategoryId=${categoryId}&maxResults=${maxResults}&key=${My_ApiKEY}`;
@@ -157,15 +183,7 @@ async function FetchData(categoryId, maxResults = 3) {
         const response = await fetch(url);
         if (!response.ok) throw new Error(`Http error Status: ${response.status}`);
         const result = await response.json();
-        return result.items.map(item => ({
-            id: item.id,
-            title: item.snippet.title,
-            channel: item.snippet.channelTitle,
-            channelId: item.snippet.channelId,
-            thumbnail: item.snippet.thumbnails.maxres ? item.snippet.thumbnails.maxres.url : item.snippet.thumbnails.default.url,
-            views: item.statistics.viewCount,
-            publishedAt: item.snippet.publishedAt,
-        }));
+        return await formatWithChannelLogos(result.items);
     } catch (err) { return []; }
 }
 
@@ -181,16 +199,7 @@ async function getChannelVideos(channelId, maxResults = 3) {
         const videosUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${videoIds}&key=${My_ApiKEY}`;
         const videosRes = await fetch(videosUrl);
         const videosResult = await videosRes.json();
-
-        return videosResult.items.map(item => ({
-            id: item.id,
-            title: item.snippet.title,
-            channel: item.snippet.channelTitle,
-            channelId: item.snippet.channelId,
-            thumbnail: item.snippet.thumbnails.maxres ? item.snippet.thumbnails.maxres.url : item.snippet.thumbnails.high.url,
-            views: item.statistics.viewCount,
-            publishedAt: item.snippet.publishedAt,
-        }));
+        return await formatWithChannelLogos(videosResult.items);
     } catch (err) { return []; }
 }
 
@@ -203,7 +212,7 @@ function renderSubscriptions() {
     }
 
     mySubs.forEach(sub => {
-        const rowDiv = document.createElement('div');
+        const rowDiv = document.createElement('div');   
         rowDiv.style.display = 'flex';
         rowDiv.style.alignItems = 'center';
         rowDiv.style.justifyContent = 'space-between';
@@ -211,8 +220,10 @@ function renderSubscriptions() {
 
         const btn = document.createElement('button');
         btn.className = 'home';
-        btn.innerText = sub.name;
+
         btn.style.flex = '1';
+        const miniLogo = sub.logo ? sub.logo : `https://ui-avatars.com/api/?name=${encodeURIComponent(sub.name)}&background=random&color=fff`;
+        btn.innerHTML = `<img src="${miniLogo}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;"> <span>${sub.name}</span>`;
         
         btn.addEventListener('click', async () => {
             isSearchActive = true; 
@@ -275,7 +286,11 @@ document.getElementById('confirm-sub-btn').addEventListener('click', () => {
         if (isSubbed) {
             mySubs = mySubs.filter(s => s.id !== targetSubChannel.channelId);
         } else {
-            mySubs.push({ name: targetSubChannel.channel, id: targetSubChannel.channelId });
+           mySubs.push({ 
+                name: targetSubChannel.channel, 
+                id: targetSubChannel.channelId,
+                logo: targetSubChannel.channelLogo,
+            });
         }
         localStorage.setItem('mytube_subscriptions', JSON.stringify(mySubs));
         renderSubscriptions();
@@ -353,18 +368,7 @@ searchForm.addEventListener('submit', async function (e) {
         const videoData = await videoResponse.json();
 
         videoData.items.sort((a, b) => searchIdsArray.indexOf(a.id) - searchIdsArray.indexOf(b.id));
-
-        const VideosFormatter = videoData.items.map(item => ({
-            id: item.id,
-            title: item.snippet.title,
-            channel: item.snippet.channelTitle,
-            channelId: item.snippet.channelId,
-            thumbnail: item.snippet.thumbnails.maxres ? item.snippet.thumbnails.maxres.url :
-                (item.snippet.thumbnails.high ? item.snippet.thumbnails.high.url : item.snippet.thumbnails.default.url),
-            views: item.statistics.viewCount,
-            publishedAt: item.snippet.publishedAt,
-        }));
-
+        const VideosFormatter = await formatWithChannelLogos(videoData.items);
         VideosFormatter.forEach(video => {
             displayVideo.add(video.id);
             CreateCard(video);

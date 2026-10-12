@@ -7,7 +7,6 @@ body {
     overflow: hidden;
 }
 
-/* Navbar Animation Fixes */
 .navbar {
     height: 56px;
     display: flex;
@@ -18,7 +17,7 @@ body {
     position: sticky;
     top: 0;
     z-index: 100;
-    transition: margin-top 0.3s ease; /* Using margin-top seamlessly pulls the whole page layout up */
+    transition: margin-top 0.3s ease;
 }
 
 .navbar.nav-hidden {
@@ -183,15 +182,18 @@ body {
     cursor: pointer;
     text-align: left;
     white-space: nowrap;
+    gap:16px;
     overflow: hidden;
     text-overflow: ellipsis;
 }
-
+.home i {
+    font-size: 22px;
+}
 .home:hover {
     background-color: #272727;
 }
 
-/* Sidebar Unsubscribe Button Styling */
+
 .unsub-btn {
     background: none; border: none; color: #aaa; cursor: pointer; font-size: 18px; padding: 0 8px;
     transition: color 0.2s;
@@ -414,7 +416,7 @@ h2 {
         background-color: rgba(62, 166, 255, 0.1);
     }
 
-    /* Keep the logo on Mobile! */
+
     .nav-left h1 { display: block; }
     
     .navbar { padding: 0 12px; gap: 10px; }
