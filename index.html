@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -39,10 +40,30 @@
         </div>
 
         <div class="nav-right">
-            <button class="create-btn"><i class="uil uil-plus"></i><span class="create-text">Create</span></button>
+            <button class="icon-btn mobile-search-trigger" style="display:none;"><i class="uil uil-search"></i></button>
+            <button class="create-btn desktop-only"><i class="uil uil-plus"></i><span class="create-text">Create</span></button>
             <button class="icon-btn"><i class="uil uil-bell"></i></button>
-            <button class="icon-btn profile-btn"><i class="uil uil-user"></i></button>
+            <button class="icon-btn profile-btn desktop-only"><i class="uil uil-user"></i></button>
         </div>
+    </nav>
+    <div id="mobile-search-overlay" class="search-overlay">
+        <div class="search-overlay-header">
+            <button id="close-search-btn" class="icon-btn"><i class="uil uil-arrow-left"></i></button>
+            <form id="mobile-search-form" class="mobile-search-form">
+                <input type="search" id="mobile-search-input" placeholder="Search YouTube">
+            </form>
+            <button class="icon-btn btn-mic" style="background: transparent;"><i class="uil uil-microphone"></i></button>
+        </div>
+        <div id="search-history-list" class="search-history-list">
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <button class="bottom-nav-item active"><i class="uil uil-estate"></i><span>Home</span></button>
+        <button class="bottom-nav-item"><i class="uil uil-bolt-alt"></i><span>Shorts</span></button>
+        <button class="bottom-nav-item create-btn-mobile"><i class="uil uil-plus-circle"></i></button>
+        <button class="bottom-nav-item"><i class="uil uil-tv-retro"></i><span>Subs</span></button>
+        <button class="bottom-nav-item"><i class="uil uil-user"></i><span>You</span></button>
     </nav>
     <div class="main-body">
     <div class="brack">

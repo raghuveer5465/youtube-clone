@@ -313,3 +313,53 @@ gridCards.addEventListener('scroll', async ()=>{
         }
     }
 });
+
+const mobileSearchTrigger = document.querySelector('.mobile-search-trigger');
+const searchOverlay = document.getElementById('mobile-search-overlay');
+const closeSearchBtn = document.getElementById('close-search-btn');
+const mobileSearchForm = document.getElementById('mobile-search-form');
+const mobileSearchInput = document.getElementById('mobile-search-input');
+const searchHistoryList = document.getElementById('search-history-list');
+let searchHistory = JSON.parse(localStorage.getItem('mytube_history')) || [];
+
+function renderHistory() {
+    searchHistoryList.innerHTML = '';
+    searchHistory.forEach(term => {
+        const div = document.createElement('div');
+        div.className = 'history-item';
+        div.innerHTML = `<i class="uil uil-history"></i><span>${term}</span>`;
+            div.addEventListener('click', () => {
+            executeMobileSearch(term);
+        });
+        
+        searchHistoryList.appendChild(div);
+    });
+}
+
+mobileSearchTrigger.addEventListener('click', () => {
+    searchOverlay.classList.add('active');
+    renderHistory();
+    setTimeout(() => mobileSearchInput.focus(), 300);
+});
+closeSearchBtn.addEventListener('click', () => {
+    searchOverlay.classList.remove('active');
+});
+mobileSearchForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const term = mobileSearchInput.value.trim();
+    if (term) executeMobileSearch(term);
+});
+
+function executeMobileSearch(term) {
+    searchHistory = searchHistory.filter(t => t !== term);
+    searchHistory.unshift(term); 
+    
+    if (searchHistory.length > 10) {
+        searchHistory.pop();
+    }
+    
+    localStorage.setItem('mytube_history', JSON.stringify(searchHistory));
+    document.getElementById('search').value = term;
+    searchOverlay.classList.remove('active');
+searchForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+}
