@@ -17,11 +17,11 @@ body {
     position: sticky;
     top: 0;
     z-index: 100;
-    transition: margin-top 0.3s ease;
+    transition: top 0.3s ease;
 }
 
 .navbar.nav-hidden {
-    margin-top: -56px; 
+    top: -60px;
 }
 
 .nav-left {
@@ -158,14 +158,20 @@ body {
     background-color: #0f0f0f;
     display: flex;
     flex-direction: column;
-    padding: 12px;
-    overflow-y: auto;
+    padding: 12px 12px 0 12px;
+    overflow: hidden;
     flex-shrink: 0;
 }
 
-.brack::-webkit-scrollbar { width: 8px; }
-.brack::-webkit-scrollbar-thumb { background: transparent; border-radius: 4px; }
-.brack:hover::-webkit-scrollbar-thumb { background: #717171; }
+#dynamic-subs-container {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 20px;
+}
+
+#dynamic-subs-container::-webkit-scrollbar { width: 8px; }
+#dynamic-subs-container::-webkit-scrollbar-thumb { background: transparent; border-radius: 4px; }
+#dynamic-subs-container:hover::-webkit-scrollbar-thumb { background: #717171; }
 
 .home {
     display: flex;
@@ -422,13 +428,13 @@ h2 {
     .navbar { padding: 0 12px; gap: 10px; }
     .nav-right { margin-left: auto; gap: 8px; }
     .bottom-nav { display: flex; }
-    .main-body { height: calc(100vh - 106px); }
+    .main-body { height: calc(100vh - 60px); }
 
     .brack {
         position: fixed;
         top: 56px;
         left: -260px;
-        height: calc(100vh - 106px);
+        height: calc(100vh - 60px);
         width: 240px;
         background-color: #0f0f0f;
         z-index: 1000;
