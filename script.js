@@ -8,7 +8,6 @@ let lastScrollY = 0;
 let targetSubChannel = null;
 
 const gridCards = document.getElementById('video-grid');
-//const loader = document.getElementById('loading-spinner');
 const topNav = document.getElementById('top-navbar');
 const bottomNav = document.getElementById('bottom-navbar');
 const searchForm = document.querySelector('.search-form');
@@ -24,7 +23,6 @@ const searchHistoryList = document.getElementById('search-history-list');
 const subModal = document.getElementById('subscribe-modal');
 const subsContainer = document.getElementById('dynamic-subs-container');
 
-//if(loader) { loader.style.gridColumn = '1 / -1'; }
 gridCards.style.paddingBottom = "80px";
 
 let mySubs = JSON.parse(localStorage.getItem('mytube_subscriptions')) || [];
@@ -205,6 +203,7 @@ function CreateCard(videoData) {
 }
 
 async function formatWithChannelLogos(items) {
+    if (!items || !Array.isArray(items)) return [];
     const uniqueIds = [...new Set(items.map(item => item.snippet.channelId))].slice(0, 50);
     const logosDict = {};
     
@@ -505,9 +504,8 @@ gridCards.addEventListener('scroll', async () => {
         try {
             const newVideos = await FetchData(randomCategory, 50);
             const uniqueVideos = newVideos.filter(video => !displayVideo.has(video.id));
-
+            removeSkeletons();
             if (uniqueVideos.length === 0) {
-                if (loader) loader.style.display = 'none';
                 isFetchingMore = false;
                 return;
             }
@@ -521,24 +519,18 @@ gridCards.addEventListener('scroll', async () => {
             }
             
             const videosToRender = uniqueVideos.slice(0, renderCount);
-
-            const fragment = document.createDocumentFragment();
             videosToRender.forEach(videoData => {
                 displayVideo.add(videoData.id);
                 CreateCard(videoData);
             });
-
-            gridCards.insertBefore(fragment, loader);
-            loader.style.display = 'none';
             isFetchingMore = false;
             
             if (displayVideo.size >= 60 && !limitPopupShown) {
                 showLimitPopup("You've seen them all!", "We've loaded 60 popular videos for you. If you are looking for something specific, please use the search bar at the top!");
                 limitPopupShown = true;
             }
-            
         } catch (err) {
-            if (loader) loader.style.display = 'none';
+            removeSkeletons();
             isFetchingMore = false;
         }
     }
