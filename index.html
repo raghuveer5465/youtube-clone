@@ -1,31 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Double:wght@100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Double:wght@100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css">
     <link rel="stylesheet" href="style.css">
     <title>MyTube Project</title>
     <meta name="google-site-verification" content="7ionVHKnHyBoI3vl1DKxvpFEyV6biAFdfZBL4f3q7nk" />
 </head>
-
 <body>
-    <nav class="navbar">
-    <div class="nav-left">
+    <nav class="navbar" id="top-navbar">
+        <div class="nav-left">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="bars">
                 <path fill="#fff" d="M20,11H4c-0.6,0-1,0.4-1,1s0.4,1,1,1h16c0.6,0,1-0.4,1-1S20.6,11,20,11z M4,8h16c0.6,0,1-0.4,1-1s-0.4-1-1-1H4C3.4,6,3,6.4,3,7S3.4,8,4,8z M20,16H4c-0.6,0-1,0.4-1,1s0.4,1,1,1h16c0.6,0,1-0.4,1-1S20.6,16,20,16z"></path>
             </svg>
-            
             <svg width="40" height="30" viewBox="0 0 40 30" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-left: 15px; margin-right: 5px;">
                 <rect width="40" height="30" rx="8" fill="#FF0000"/>
                 <path d="M26 15L16 21V9L26 15Z" fill="white"/>
             </svg>
-            
-            <h1 style="color: white; font-size: 20px; font-family: 'Roboto', sans-serif; font-weight: 700; letter-spacing: -1px; margin: 0;">MyTube</h1>
+            <h1 style="color: white; font-size: 18px; font-family: 'Roboto', sans-serif; font-weight: 700; letter-spacing: -1px; margin: 0;">MyTube</h1>
         </div>
         <div class="nav-center">
             <form class="search-form">
@@ -38,14 +33,14 @@
             </form>
             <button class="icon-btn btn-mic"><i class="uil uil-microphone"></i></button>
         </div>
-
         <div class="nav-right">
             <button class="icon-btn mobile-search-trigger" style="display:none;"><i class="uil uil-search"></i></button>
-            <button class="create-btn desktop-only"><i class="uil uil-plus"></i><span class="create-text">Create</span></button>
             <button class="icon-btn"><i class="uil uil-bell"></i></button>
+            <button class="create-btn desktop-only"><i class="uil uil-plus"></i><span class="create-text">Create</span></button>
             <button class="icon-btn profile-btn desktop-only"><i class="uil uil-user"></i></button>
         </div>
     </nav>
+
     <div id="mobile-search-overlay" class="search-overlay">
         <div class="search-overlay-header">
             <button id="close-search-btn" class="icon-btn"><i class="uil uil-arrow-left"></i></button>
@@ -54,53 +49,65 @@
             </form>
             <button class="icon-btn btn-mic" style="background: transparent;"><i class="uil uil-microphone"></i></button>
         </div>
-        <div id="search-history-list" class="search-history-list">
+        <div id="search-history-list" class="search-history-list"></div>
+    </div>
+
+    <div id="subscribe-modal" class="search-overlay" style="display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.8);">
+        <div style="background:#212121; padding:30px; border-radius:12px; text-align:center; color:white; border: 1px solid #333; max-width: 300px;">
+            <h3 id="sub-modal-title" style="margin-top:0;">Subscribe?</h3>
+            <p style="color: #aaa; font-size: 14px; margin-bottom: 20px;">Add this channel to your subscriptions.</p>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button id="cancel-sub-btn" style="background:#333; color:#fff; border:none; padding:10px 20px; cursor:pointer; border-radius:18px; font-weight: bold;">Cancel</button>
+                <button id="confirm-sub-btn" style="background:#f00; color:#fff; border:none; padding:10px 20px; cursor:pointer; border-radius:18px; font-weight: bold;">Subscribe</button>
+            </div>
         </div>
     </div>
 
-    <nav class="bottom-nav">
-        <button class="bottom-nav-item active"><i class="uil uil-estate"></i><span>Home</span></button>
-        <button class="bottom-nav-item"><i class="uil uil-bolt-alt"></i><span>Shorts</span></button>
-        <button class="bottom-nav-item create-btn-mobile"><i class="uil uil-plus-circle"></i></button>
-        <button class="bottom-nav-item"><i class="uil uil-tv-retro"></i><span>Subs</span></button>
-        <button class="bottom-nav-item"><i class="uil uil-user"></i><span>You</span></button>
+    <nav class="bottom-nav" id="bottom-navbar">
+        <button class="bottom-nav-item active" id="mobile-home-btn">
+            <i class="uil uil-estate"></i>
+            <span>Home</span>
+        </button>
+        <button class="bottom-nav-item">
+            <i class="uil uil-bolt-alt"></i>
+            <span>Shorts</span>
+        </button>
+        <button class="bottom-nav-item create-btn-mobile">
+            <i class="uil uil-plus-circle"></i>
+        </button>
+        <button class="bottom-nav-item">
+            <i class="uil uil-tv-retro"></i>
+            <span>Subs</span>
+        </button>
+        <button class="bottom-nav-item">
+            <i class="uil uil-user"></i>
+            <span>You</span>
+        </button>
     </nav>
+
     <div class="main-body">
-    <div class="brack">
-        <div> <button class="home" onclick="window.location.href='https://www.youtube.com/'">
-                Home </button></div>
-        <div><button class="home"
-                onclick="document.location.href='https://www.youtube.com/c/YouTubeShortsSHIHAB'">Shorts</button></div>
-        <div> <button class="home"
-                onclick="document.location.href='https://www.youtube.com/feed/subscriptions'">Subscription</button>
+        <div class="brack">
+            <div><button class="home" id="sidebar-home-btn">Home</button></div>
+            <div><button class="home">Shorts</button></div>
+            <hr>
+            <div><button class="home">You<i class="uil uil-angle-right-b"></i></button></div>
+            <div><button class="home">History</button></div>
+            <div><button class="home">Playlists</button></div>
+            <div><button class="home">Your Videos</button></div>
+            <div><button class="home">Liked Videos</button></div>
+            <hr>
+            <div id="dynamic-subs-container">
+                <h2>Subscriptions</h2>
+            </div>
         </div>
-        <hr>
-        <div> <button class="home">You<i class="uil uil-angle-right-b"></i></button></div>
-        <div><button class="home">History</button></div>
-        <div><button class="home">Playlists</button></div>
-        <div><button class="home">Your Videos</button></div>
-        <div><button class="home">Watch Later</button></div>
-        <div><button class="home">Liked Videos</button></div>
-        <hr>
-        <h2>Subscription</h2>
-        <div><button class="home"
-                onclick="window.location.href='http://www.youtube.com/@BeastBoyShub'">BeastBoyShub</button></div>
-        <div><button class="home" onclick="window.location.href='http://www.youtube.com/@MrBeast'">MrBeast</button>
+        
+        <div class="video-grid" id="video-grid"></div>
+        
+        <div id="loading-spinner" style="display: none; width: 100%; text-align: center; padding: 20px; color: #aaaaaa;">
+            <i class="uil uil-spinner" style="font-size: 24px; display: inline-block; animation: spin 1s linear infinite;"></i>
+            <p style="margin-top: 5px; font-size: 14px;">Loading more videos...</p>
         </div>
-        <div><button class="home"
-                onclick="window.location.href='http://www.youtube.com/@Round2hell'">Round2Hell</button></div>
-        <div><button class="home" onclick="window.location.href='http://www.youtube.com/@ashishchanchlanivines'">AC
-                Vines</button></div>
-        <div><button class="home" onclick="window.location.href='http://www.youtube.com/@BBKiVines'">Bhuvan Bam</button>
-        </div>
-    </div>
-        <div class="video-grid" id="video-grid"> </div>
-    <div id="loading-spinner" style="display: none; width: 100%; text-align: center; padding: 20px; color: #aaaaaa;">
-    <i class="uil uil-spinner" style="font-size: 24px; display: inline-block; animation: spin 1s linear infinite;"></i>
-    <p style="margin-top: 5px; font-size: 14px;">Loading more videos...</p>
-    </div>
     </div>
     <script src="script.js"></script>
 </body>
-
 </html>
