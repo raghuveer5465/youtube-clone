@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mytube-cache-v4';
+const CACHE_NAME = 'mytube-cache-v5';
 const urlsToCache = [
   './',
   './index.html',

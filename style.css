@@ -431,6 +431,7 @@ h2 {
     flex-direction: column;
     gap: 12px;
     pointer-events: none;
+    margin-bottom: 24px;
 }
 .skeleton-thumbnail {
     width: 100%;
