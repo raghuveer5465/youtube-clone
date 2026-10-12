@@ -8,6 +8,7 @@ let lastScrollY = 0;
 let targetSubChannel = null;
 
 const gridCards = document.getElementById('video-grid');
+
 const topNav = document.getElementById('top-navbar');
 const bottomNav = document.getElementById('bottom-navbar');
 const searchForm = document.querySelector('.search-form');
@@ -22,6 +23,7 @@ const mobileSearchInput = document.getElementById('mobile-search-input');
 const searchHistoryList = document.getElementById('search-history-list');
 const subModal = document.getElementById('subscribe-modal');
 const subsContainer = document.getElementById('dynamic-subs-container');
+
 
 gridCards.style.paddingBottom = "80px";
 
@@ -506,6 +508,7 @@ gridCards.addEventListener('scroll', async () => {
             const uniqueVideos = newVideos.filter(video => !displayVideo.has(video.id));
             removeSkeletons();
             if (uniqueVideos.length === 0) {
+
                 isFetchingMore = false;
                 return;
             }
@@ -519,16 +522,21 @@ gridCards.addEventListener('scroll', async () => {
             }
             
             const videosToRender = uniqueVideos.slice(0, renderCount);
+
+
             videosToRender.forEach(videoData => {
                 displayVideo.add(videoData.id);
                 CreateCard(videoData);
             });
+
+            
             isFetchingMore = false;
             
             if (displayVideo.size >= 60 && !limitPopupShown) {
                 showLimitPopup("You've seen them all!", "We've loaded 60 popular videos for you. If you are looking for something specific, please use the search bar at the top!");
                 limitPopupShown = true;
             }
+
         } catch (err) {
             removeSkeletons();
             isFetchingMore = false;
