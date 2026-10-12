@@ -65,10 +65,10 @@ function CreateCard(videoData) {
     
     card.innerHTML = `
         <div class="thumbnail-container">
-            <img src="${videoData.thumbnail}" alt="Thumbnail">
+            <img src="${videoData.thumbnail}" alt="Thumbnail" draggable="false">
         </div>
         <div class="video-info">
-            <img class="channel-avatar" src="${picURL}" alt="Channel Avatar">
+            <img class="channel-avatar" src="${picURL}" alt="Channel Avatar" draggable="false">
             <div class="video-details">
                 <h3 class="video-title">${videoData.title}</h3>
                 <p class="channel-name">${videoData.channel}</p> 
@@ -78,17 +78,42 @@ function CreateCard(videoData) {
     `;
 
     let pressTimer;
-    const startPress = () => {
-        pressTimer = window.setTimeout(() => openSubscribeModal(videoData), 800);
+    
+    const startPress = (e) => {
+        // Ignore right-clicks on a mouse
+        if (e.type === 'mousedown' && e.button !== 0) return; 
+        
+        // Add the scale-up animation immediately
+        card.classList.add('pressing');
+        
+        pressTimer = window.setTimeout(() => {
+            card.classList.remove('pressing');
+            openSubscribeModal(videoData);
+        }, 1000);
+    }; 
+    
+    const cancelPress = () => {
+        clearTimeout(pressTimer);
+        card.classList.remove('pressing');
     };
-    const cancelPress = () => clearTimeout(pressTimer);
 
+    card.addEventListener('contextmenu', (e) => {
+        e.preventDefault(); 
+    });
+
+    // Handle Desktop
     card.addEventListener('mousedown', startPress);
     card.addEventListener('mouseup', cancelPress);
     card.addEventListener('mouseleave', cancelPress);
+    
+    // Handle Mobile
     card.addEventListener('touchstart', startPress, {passive: true});
     card.addEventListener('touchend', cancelPress);
-    card.addEventListener('touchmove', cancelPress);
+    card.addEventListener('touchcancel', cancelPress);
+    
+    // If the user starts dragging their finger to scroll, cancel the hold
+    card.addEventListener('touchmove', cancelPress, {passive: true});
+    grid.addEventListener('scroll', cancelPress);
     
     grid.appendChild(card);
 }

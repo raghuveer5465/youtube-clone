@@ -219,8 +219,14 @@ h2 {
     cursor: pointer;
     -webkit-user-select: none;
     user-select: none;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), z-index 0.4s;
 }
-
+.video-card.pressing {
+    transform: scale(1.08);
+    z-index: 50;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+    border-radius: 12px;
+}
 .thumbnail-container {
     width: 100%;
     aspect-ratio: 16/9;
