@@ -26,6 +26,5 @@ A high-performance, client-side dynamic Single Page Application (SPA) built to r
 
 MyTube operates on a **JAMstack** architecture (JavaScript, APIs, and Markup). There is no backend server; all logic, state management, and API routing are handled dynamically in the client's browser.
 
-<img src="./architecture.png" width="500" alt="System Architecture">
-
+<img src="./architecture.png" width="600" alt="System Architecture">
 ---
